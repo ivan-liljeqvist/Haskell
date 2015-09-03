@@ -6,8 +6,9 @@ module F2 where
 
     data MolSeq = MolSeq {name::String,theSeq::String,isDNA::Bool} deriving (Show) 
 
-    a = MolSeq "a" "a" False 
-    b = MolSeq "a" "a" True 
+    a = MolSeq "a" "ACGTACGT" True 
+    b = MolSeq "a" "CCCTACCT" True 
+
 
     {-|
       string2seq - takes the name and the sequence and parses it into MolSeq
@@ -85,13 +86,22 @@ module F2 where
     -}
     seqDistance :: MolSeq -> MolSeq -> Double
     seqDistance seq1 seq2 = 
-        if(isSameType seq1 seq2)then
-            --different implementations for different types
-            if(isDNA seq1)then
-                1.0
-            else 2.0
+        if isSameType seq1 seq2 then
+            --If its DNA
+            if (isDNA seq1) then
+                if(getHammingDistance seq1 seq2) > 0.74 then 
+                    3.3
+                else 
+                    getDNADistance (getHammingDistance seq1 seq2)
+
+            --If its Protein
+            else
+                if(getHammingDistance seq1 seq2) <= 0.94 then 
+                    3.7
+                else 
+                    getProteinDistance (getHammingDistance seq1 seq2)
         else
-             error "Sequence are not of the same type!"
+            error("Sequences are not of the same type")
 
     {-|
         isSameType
@@ -109,9 +119,25 @@ module F2 where
         Returns Hamming distance, the number of differences between the sequences.
     -}
 
-    getHammingDistance :: String -> String -> Double
+    getHammingDistance :: MolSeq -> MolSeq -> Double
     --Make tuples of each postition, filter where they are different. Divide by the original length
-    getHammingDistance (x) (y) = fromIntegral(length(filter (\a -> fst a /= snd a) (zip x y))) / fromIntegral(length x)
+    getHammingDistance x y = fromIntegral (length(filter (\a -> fst a /= snd a) (zip (theSeq x) (theSeq y)))) / fromIntegral(length (theSeq x))
+
+    {-|
+        getDNADistance
+        Takes Hamming distance. Returns evolutionary distance for DNA.
+    -}
+
+    getDNADistance :: Double -> Double
+    getDNADistance a = -(3/4) * log (1-4*a/3)
+
+    {-|
+        getProteinDistance
+        Takes Hamming distance. Returns evolutionary distance for Protein.
+    -}
+
+    getProteinDistance :: Double -> Double
+    getProteinDistance a = -(19/20) * log (1-20*a/19)
 
 
 
