@@ -6,6 +6,12 @@ module F2 where
 
     data MolSeq = MolSeq {name::String,theSeq::String,isDNA::Bool} deriving (Show) 
 
+    data Profile = Prole {profName::String,
+                          numberOfSeq::Integer,
+                          isProfDNA::Bool,
+                          matrix::[[(Char,Int)]]} 
+                          deriving (Show)
+
     a = MolSeq "a" "ACGTACGT" True 
     b = MolSeq "a" "CCCTACCT" True 
 
@@ -140,20 +146,30 @@ module F2 where
     getProteinDistance a = -(19/20) * log (1-20*a/19)
 
     {-|
+        molseqs2profile
+        Takes the name of profile to be created, two MolSeqs and constructs a Profile. 
+    -}
+
+    --molseqs2profile :: String -> [MolSeq] -> Profile
+
+
+    {-|
         makeProfileMatrix
         Construct a profile matrix
     -}
 
+
+
     nucleotides = "ACGT"
     aminoacids = sort "ARNDCEQGHILKMFPSTWYVX"
 
-    makeProfileMatrix :: [MolSeq] -> ???
+    makeProfileMatrix :: [MolSeq] -> [[(Char,Int)]]
     makeProfileMatrix [] = error "Empty sequence list"
     makeProfileMatrix sl = res
       where 
-        t = seqType (head sl)
+        currentSeq = head sl
         defaults = 
-          if (t == DNA) then
+          if (isDNA currentSeq) then
             zip nucleotides (replicate (length nucleotides) 0) -- Rad (i)
           else 
             zip aminoacids (replicate (length aminoacids) 0)   -- Rad (ii)
