@@ -9,11 +9,18 @@ module F2 where
     data Profile = Profile {profName::String,
                           numberOfSeq::Int,
                           isProfDNA::Bool,
-                          matrix::[[(Char,Int)]]} 
+                          matrix::[[(Char,Double)]]} 
                           deriving (Show)
 
     a = MolSeq "a" "ACGTACGT" True 
     b = MolSeq "a" "CCCTACCT" True 
+
+    c = [[('A',6),('A',6),('A',1),('A',0),('A',2),('A',3)],
+         [('C',0),('C',0),('C',1),('C',1),('C',2),('C',3)],
+         [('G',0),('G',0),('G',4),('G',0),('G',1),('G',0)],
+         [('T',0),('T',0),('T',0),('T',5),('T',1),('T',0)]]
+
+    d = transpose c
 
 
     {-|
@@ -159,20 +166,52 @@ module F2 where
     getProteinDistance a = -(19/20) * log (1-20*a/19)
 
     {-|
+        profileName
+        Takes in a Profile and returns the name of it
+    -}
+
+    profileName :: Profile -> String
+    profileName profile = profName profile
+
+    {-|
+        profileFrequency
+        Takes in Profile, position, character and returns the relative frequence of the character
+        at the position in the Profile.
+         profileFrequency :: Profile -> Int -> Char -> Double
+    profileFrequency profile i c = 
+    -}
+
+   
+
+    {-|
         molseqs2profile
-        Takes the name of profile to be created, two MolSeqs and constructs a Profile. 
+        Takes the name of profile to be created, several MolSeqs and constructs a Profile. 
     -}
 
     molseqs2profile :: String -> [MolSeq] -> Profile
-    molseqs2profile pName seqs = Profile pName (length seqs) True (makeProfileMatrix seqs)
+    molseqs2profile pName seqs = 
+        if not (isArraySameType seqs) then
+            error "not same type, cant make profile"
+        --construct the profile. because we made sure that they all are same type, we just take the
+        --type from the first element
+        else Profile pName (length seqs) (isDNA (seqs!!0))  relMatrix
+            where relMatrix=(makeRelativeMatrix (makeProfileMatrix seqs) (length seqs))
+
+
+    {-|
+        makeRelativeMatrix
+        Takes the matrix with absolute values and makes them realtive.
+    -}
+
+    makeRelativeMatrix :: [[(Char, Int)]] -> Int -> [[(Char, Double)]]
+    makeRelativeMatrix absMatrix numberOfSeqs = map (map (\(x, y) -> (x , fromIntegral y / fromIntegral (numberOfSeqs)))) absMatrix
+
 
 
     {-|
         makeProfileMatrix
         Construct a profile matrix
     -}
-
-
 
     nucleotides = "ACGT"
     aminoacids = sort "ARNDCEQGHILKMFPSTWYVX"
