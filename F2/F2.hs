@@ -181,6 +181,13 @@ module F2 where
 
 
     profileFrequency :: Profile -> Int -> Char -> Double
+    --1) take the matrix as mat
+    --2) go to the row we're interested at with mat!!i
+    --3) now we filter this row to only have tuples starting with letter 'c'
+    --4) The idea is that filter should return only 1 element, because each row has only unique letters
+    --5) We extract this element with !!0
+    --6) now we have extracted the tuble we're after. The value we want is in the second position
+    --7) Therefore use snd to extract it
     profileFrequency profile i c = snd((filter((==c).fst)(mat!!i))!!0) where mat = matrix profile
 
 
