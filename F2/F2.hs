@@ -213,7 +213,7 @@ module F2 where
     -}
 
     makeRelativeMatrix :: [[(Char, Int)]] -> Int -> [[(Char, Double)]]
-    --1) We need to go through each tuple and divide the Double value by the number of sequences
+    --1) We need to go through each tuple in every row and divide the Double value by the number of sequences
     --2) Go through each row in the matrix.
     --3) Go through each tuple in that row.
     --4) For each tuple divide the second value (y) by the number of sequences.
