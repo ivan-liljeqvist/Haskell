@@ -6,8 +6,8 @@ module F2 where
 
     data MolSeq = MolSeq {name::String,theSeq::String,isDNA::Bool} deriving (Show) 
 
-    data Profile = Prole {profName::String,
-                          numberOfSeq::Integer,
+    data Profile = Profile {profName::String,
+                          numberOfSeq::Int,
                           isProfDNA::Bool,
                           matrix::[[(Char,Int)]]} 
                           deriving (Show)
@@ -120,6 +120,19 @@ module F2 where
     isSameType seq1 seq2 = if ((isDNA seq1 && isDNA seq2) || (not (isDNA seq1) && not (isDNA seq2))) then True else False
 
     {-|
+        isArraySameType
+        Takes an array of  sequences.
+        Returns true if all are of the same type.
+        False if they aren't
+    -}
+
+    isArraySameType :: [MolSeq] -> Bool
+    isArraySameType (seqOne:seqTwo:rest) = if(isSameType seqOne seqTwo) then isArraySameType (seqTwo:rest)
+                                            else False
+    isArraySameType theLast = True
+
+
+    {-|
         getHammingDistance
         Takes two sequences.
         Returns Hamming distance, the number of differences between the sequences.
@@ -150,7 +163,8 @@ module F2 where
         Takes the name of profile to be created, two MolSeqs and constructs a Profile. 
     -}
 
-    --molseqs2profile :: String -> [MolSeq] -> Profile
+    molseqs2profile :: String -> [MolSeq] -> Profile
+    molseqs2profile pName seqs = Profile pName (length seqs) True (makeProfileMatrix seqs)
 
 
     {-|
@@ -165,19 +179,46 @@ module F2 where
 
     makeProfileMatrix :: [MolSeq] -> [[(Char,Int)]]
     makeProfileMatrix [] = error "Empty sequence list"
-    makeProfileMatrix sl = res
-      where 
-        currentSeq = head sl
-        defaults = 
-          if (isDNA currentSeq) then
-            zip nucleotides (replicate (length nucleotides) 0) -- Rad (i)
-          else 
-            zip aminoacids (replicate (length aminoacids) 0)   -- Rad (ii)
-        strs = map seqSequence sl                              -- Rad (iii)
-        tmp1 = map (map (\x -> ((head x), (length x))) . group . sort)
-                   (transpose strs)                            -- Rad (iv)
-        equalFst a b = (fst a) == (fst b)
-        res = map sort (map (\l -> unionBy equalFst l defaults) tmp1)
+    makeProfileMatrix sl = 
+        if not (isArraySameType sl) then
+            error "not same type, cant make matrix"
+        else res where 
+                currentSeq = head sl
+
+                --create default tubles for each letter. we'll get [(A,0),[C,0]...]
+                defaults = 
+                  --do it first for DNA
+                  if (isDNA currentSeq) then
+                    zip nucleotides (replicate (length nucleotides) 0) -- Rad (i)
+                  --repeat for Protein
+                  else 
+                    zip aminoacids (replicate (length aminoacids) 0)   -- Rad (ii)
+                --extract the sequences from each Seq Object and return an array of strings
+                strs = map seqSequence sl -- Rad (iii)
+
+                --1) Transpose the matrix
+                --2) Sort each row in the matrix (sort)
+                --3) Divide each row into arrays containing the same letters (group)
+                --4) We now have something like this: [["AA","CCC"],["A","GGGG"]..]
+                --5) Return a 2D array of tuples. Each tuble is made by taking the 
+                --first element in each "letter array element ex: 'AA'" and the length of the element.
+                --so in the case of 'AA' we'll get the tuple (A,2)
+                --6) At the end of this function we get tmp which is a 2D array of such tuples.
+                --Ex: [[(A,2),(C,3)],[(G,1),(T,1)]] 
+                -- How we did it step by step: https://www.dropbox.com/s/2w28arudqzmcr9c/progp2.jpg?dl=0
+                -- https://www.dropbox.com/s/t1ileqhbps2t4b1/progp1.jpg?dl=0
+                
+                tmp1 = map (map (\x -> ((head x), (length x))) . group . sort)
+                           (transpose strs)      
+                                                 -- Rad (iv)
+                --check for each element in the sublist of tmp1
+                --unionBy will use this and fill the matrix with 'default tuples' which letters are missing
+                equalFst a b = (fst a) == (fst b) 
+
+                --use unionBy with equalFst to fill the matrix with default tuples. Sort the matrix
+                res = map sort (map (\l -> unionBy equalFst l defaults) tmp1) -- 
+ 
+
 
 
 
