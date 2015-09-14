@@ -88,7 +88,7 @@ module F2 where
         Throws error if trying to compare protein with DNA.
         Param1: sequence 1
         Param1: sequence 2
-        Returns: ??
+        Returns: Double
     -}
     seqDistance :: MolSeq -> MolSeq -> Double
     seqDistance seq1 seq2 = 
