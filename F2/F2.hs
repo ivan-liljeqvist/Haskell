@@ -177,11 +177,13 @@ module F2 where
         profileFrequency
         Takes in Profile, position, character and returns the relative frequence of the character
         at the position in the Profile.
-         profileFrequency :: Profile -> Int -> Char -> Double
-    profileFrequency profile i c = 
     -}
 
-   
+
+    profileFrequency :: Profile -> Int -> Char -> Double
+    profileFrequency profile i c = snd((filter((==c).fst)(mat!!i))!!0) where mat = matrix profile
+
+
 
     {-|
         molseqs2profile
