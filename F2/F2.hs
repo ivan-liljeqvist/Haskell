@@ -21,6 +21,8 @@ module F2 where
          [('T',0),('T',0),('T',0),('T',5),('T',1),('T',0)]]
 
     d = transpose c
+    e= (('A',1),('B',2))
+    f=[[('A',1.0),('B',2.0)],[('A',1.0),('B',2.0)]];
 
 
     {-|
@@ -172,6 +174,32 @@ module F2 where
 
     profileName :: Profile -> String
     profileName profile = profName profile
+
+    {-|
+        profileDistance
+        Takes in two profiles and returns the distance between them using d(M,M′)
+    -}
+
+    profileDistance :: Profile -> Profile -> Double
+    {-|
+        1) Take the matrices and turn them into plain 1D arrays using concat.
+        2) Zip the 2 matrices. So we have big tuples that contain both tuble at a particular coordinate.
+           For example: ((A,1),(A,3)) tuple with tuples
+        3) Now we go through each pair and get the difference between the values (second place in the tuple)
+        4) We do so by using map and mapping out anon function on each tuple. Each tuple will give us a Double.
+        5) We take the absolute value when we subtract each paor. 
+        6) Now we have an array of all the differences [Double]
+        7) We now sum the array so we get a Double.
+    -}
+    profileDistance p1 p2 = sum arrayWithAbsoluteDifferences
+        where 
+        plainMatArray1 = concat (matrix p1)
+        plainMatArray2 = concat (matrix p2)
+        tupleWithTuplesAtEachCoord = (zip plainMatArray1 plainMatArray2) --array of tuples with tuples
+        subtractPairAndAbs = (\(x,y) -> abs(snd x - snd y)) --function used by map below
+        arrayWithAbsoluteDifferences = (map subtractPairAndAbs tupleWithTuplesAtEachCoord)
+
+
 
     {-|
         profileFrequency
